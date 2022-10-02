@@ -1,7 +1,10 @@
 const nameInput = document.getElementById("my-name-input");
 const myMessage = document.getElementById("my-message");
 const sendButton = document.getElementById("send-button");
+const saveButton = document.getElementById("save-button");
+const deleteButton = document.getElementById("delete-button");
 const chatBox = document.getElementById("chat");
+let isStored = false;
 
 async function updateMessages() {
   // Fetch Messages
@@ -52,28 +55,55 @@ function formatMessage(message, myNameInput) {
   }
 }
 function sendMessages(username, text) {
-  const newMessage = {
-      sender: username,
-      text: text,
-      timestamp: new Date()
-  }
+    if (nameInput != null) 
+    {
+        const newMessage = {
+            sender: username,
+            text: text,
+            timestamp: new Date()
+        }
+      
+        fetch (serverURL, {
+            method: `POST`, 
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newMessage)
+        });
+    } else {
+        console.log('preventing messages until name inputted');
+    }
 
-  fetch (serverURL, {
-      method: `POST`, 
-      headers: {
-          'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(newMessage)
-  });
 }
 sendButton.addEventListener("click", function(sendButtonClickEvent) {
-  sendButtonClickEvent.preventDefault();
-  const sender = nameInput.value;
-  const message = myMessage.value;
+    if (nameInput.value != "" && isStored == true) 
+    {
+        sendButtonClickEvent.preventDefault();
+        const sender = nameInput.value;
+        const message = myMessage.value;
 
-  sendMessages(sender,message);
-  myMessage.value = "";
+        sendMessages(sender,message);
+        myMessage.value = "";
+    } else {
+        console.log('preventing messages until name inputted and saved');
+    }
 });
+saveButton.addEventListener("click", function(saveButtonClickEvent) {
+    if (nameInput.value != "")
+    {
+        localStorage.setItem('username', `${nameInput.value}`);
+    }
+    console.log('username: ' + localStorage.getItem('username') + ' saved to storage');
+    isStored = true;
+        
+    
+});
+deleteButton.addEventListener("click", function(deleteButtonClickEvent) {
+    let tempUser = localStorage.getItem('username');
+    localStorage.removeItem('username');
+    console.log('Username: ' + tempUser + ' removed');
+    isStored = false;
+})
 
 updateMessages();
 setInterval(updateMessages, 10000);
